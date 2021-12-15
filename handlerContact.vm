@@ -1,0 +1,82 @@
+#try($trySend)
+#if($request.get('nameContact') && $request.get('subjectContact') && $request.get('emailContact') && $request.get('messageContact'))
+	#if($engine.isValidEmailAddress($request.get('emailContact')))
+	#set($newCon = $session.newRecord("Message"))
+	#set($void = $newCon.store('Name', $request.get('nameContact')))
+	#set($void = $newCon.store('Subject', $request.get('subjectContact')))
+	#set($void = $newCon.store('Email', $request.get('emailContact')))
+	#set($void = $newCon.store('Message', $request.get('messageContact')))
+	#set($okContact = $newCon.save())
+	
+	#define($bodyContact)
+	<html>
+	<h4>Hola!<br>Hay Suave Active Care recibió un nuevo mensaje.</h4>
+	<h4>Nombre: $newCon.get('Name').</h4>
+	<h4>Email: $newCon.get('Email').</h4>
+	<h4>Asunto: $newCon.get('Subject').</h4>
+	<p>Mensaje: $newCon.get('Message').</p>
+	<br>
+	<div style="width:100%;background-color:#846ad9;height:90px;">
+	<center>
+	<img src="https://www.suave-activecare.com/templates/Img/Header/Logo-Suave-Active-Care.png" style="height:50px;margin-top:20px;"/>
+	</center>
+	</div>
+	</html>
+	#end
+	$application.email("no-reply@suave-activecare.com", "info@suave-activecare.com", "Nuevo Mensaje: $newCon.get('Subject')", "$bodyContact")
+	#else
+	#set($notValidEmail = true)
+	#end
+#end
+#end
+
+
+			#if($okContact)<div role="alert" class="alert alert-success"> Tu información de contacto fue enviada con éxito. </div>#end
+			
+					<form class="p-0 m-0" id="contactForm">
+					  <div class="form-group">
+					    <label for="InputName" class="pl-2" style="color:#9C27B0">Nombre</label>
+					    <input type="text" class="form-control rounded-pill" id="InputName" aria-describedby="Nombre" name="nameContact" #if($request.get('nameContact'))value="$request.get('nameContact')"#end>
+					  </div>
+					  
+					  <div class="form-group">
+					  	#if($notValidEmail)
+						<small style="color:red;">Debe escribir un email válido</small>
+						#end
+						#if($request.get('nameContact') && !$request.get('emailContact'))
+						<small style="color:red;">Debe escribir un email</small>
+						#end
+					    <label for="CorreoElectronico2" class="pl-2" style="color:#9C27B0">Correo eléctronico</label>
+					    <input type="email" class="form-control rounded-pill" id="CorreoElectronico2" aria-describedby="CorreoElectronico2" name="emailContact" #if($request.get('emailContact'))value="$request.get('emailContact')"#end>
+					  </div>
+					  
+					  <div class="form-group">
+					    <label for="Asunto" class="pl-2" style="color:#9C27B0">Asunto</label>
+					    <input type="text" class="form-control rounded-pill" id="Asunto" aria-describedby="" name="subjectContact" #if($request.get('subjectContact'))value="$request.get('subjectContact')"#end>
+					  </div>
+					  
+					  <div class="form-group">
+					    <label for="AreaMensaje" class="pl-2" style="color:#9C27B0">Mensaje</label>
+					    <textarea class="form-control" id="AreaMensaje" rows="4" style="border-radius: 10px;" name="messageContact"  #if($request.get('messageContact'))value="$request.get('messageContact')"#end></textarea>
+					  </div>
+					  </form>
+					  <div class="container mb-3">
+						  <div class="row d-flex align-items-center justify-content-end mr-1 ">
+						  		<a id="submitContact" class="btn rounded-pill text-white px-5 brightenonmouseover sendContact" style="background-color:#9C27B0" disabled>Enviar</a>	
+						  </div>
+					  </div>
+			
+<script>
+$('#CorreoElectronico2').change(function(){
+    $("#submitContact").removeAttr('disabled');
+});
+$(".sendContact").on("click", function(){
+	$.ajax({
+	  url: "/templates/ajax/handlerContact.vm",
+	  data: $("#contactForm").serialize(),
+	  context: document.body
+	}).done(function(response) {
+	  $("#contactFormDiv").html(response);
+	});
+})
+</script>
